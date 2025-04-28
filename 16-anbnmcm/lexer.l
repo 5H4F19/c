@@ -6,7 +6,7 @@
 a   { return 'a'; }
 b   { return 'b'; }
 c   { return 'c'; }
-[ \t\n] { /* Ignore whitespace */ }
+[ \t\n] {}
 .   { return yytext[0]; }
 %%
 

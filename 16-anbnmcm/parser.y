@@ -1,57 +1,68 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
-
-int a_count = 0;
-int b_count = 0;
-int c_count = 0;
+#include <string.h>
 
 int yylex();
 int yyerror(const char *s);
+extern FILE* yyin;
+void yyrestart(FILE* input_file);
 %}
 
 %%
 start:
-    sequence
-    {
-        if (b_count == a_count + c_count) {
-            printf("✅ Valid string.\n");
-        } else {
-            printf("❌ Invalid string.\n");
-        }
-    }
-    ;
-
-sequence:
-    a_part b_part c_part
-    ;
-
-a_part:
-    /* empty */
-    |
-    a_part 'a' { a_count++; }
-    ;
-
-b_part:
-    /* empty */
-    |
-    b_part 'b' { b_count++; }
-    ;
-
-c_part:
-    /* empty */
-    |
-    c_part 'c' { c_count++; }
-    ;
+     S { printf("String is in the language\n"); }
+S:
+ A B
+ ;
+A:
+  'a' A 'b'
+  |
+  ;
+B:
+   'b' B 'c'
+  |
+ ;
 %%
 
 int main() {
-    printf("Enter string: ");
-    yyparse();
+    char input[100];
+    
+    while(1) {
+        printf("Enter string (or 'exit' to quit): ");
+        if(fgets(input, sizeof(input), stdin) == NULL) {
+            break;
+        }
+        
+        // Check for exit command
+        if(strncmp(input, "exit", 4) == 0) {
+            break;
+        }
+        
+        // Create a temporary file for input
+        FILE* temp = tmpfile();
+        if(!temp) {
+            fprintf(stderr, "Failed to create temporary file\n");
+            continue;
+        }
+        
+        // Write input to file and rewind
+        fputs(input, temp);
+        rewind(temp);
+        
+        // Set input source and parse
+        yyin = temp;
+        yyrestart(yyin);
+        yyparse();
+        
+        // Close the temp file
+        fclose(temp);
+    }
+    
     return 0;
 }
 
 int yyerror(const char *s) {
-    printf("Parse error: %s\n", s);
+    printf("Wrong format: %s\n", s);
     return 0;
 }

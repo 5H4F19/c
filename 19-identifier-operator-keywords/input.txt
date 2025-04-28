@@ -1,6 +1,9 @@
+#include <stdio.h>
+
 int main() {
     int a = 5;
     if (a > 0) {
+        printf("a is positive\n");
         return a;
     }
 }
